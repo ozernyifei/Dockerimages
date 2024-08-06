@@ -1,0 +1,23 @@
+# Use an official Ubuntu image as the base
+FROM ubuntu:22.04
+
+# Set environment variables to avoid user interaction during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Update the package list and install build tools, Valgrind, CMake, Git, and other dependencies
+RUN apt-get update && \
+    apt-get install -y \
+    build-essential \
+    valgrind \
+    libgtest-dev \
+    && apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Create a directory for the app
+WORKDIR /usr/src/app
+
+# Copy the source code and Makefile into the container
+COPY src/ .
+
+# Set the entry point to run the tests and Valgrind, redirect output to log file
+ENTRYPOINT ["sh", "-c", "make test && valgrind --leak-check=yes -s ./test > /var/log/valgrind.log 2>&1 && cat /var/log/valgrind.log"]

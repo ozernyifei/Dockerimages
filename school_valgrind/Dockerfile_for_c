@@ -1,0 +1,24 @@
+# Use an official Ubuntu image as the base
+FROM ubuntu:22.04
+
+# Set environment variables to avoid user interaction during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Update the package list and install build tools, Valgrind, Check, and other dependencies
+RUN apt-get update && \
+    apt-get install -y build-essential valgrind check lcov && \
+    apt-get clean
+
+# Create a directory for the app
+WORKDIR /usr/src/app
+
+# Copy the source code and Makefile into the container
+COPY src/ .
+
+# Build the project using the Makefile
+# RUN make
+
+# Set the entry point to run the tests and Valgrind
+ENTRYPOINT ["sh", "-c", "make test && valgrind --leak-check=yes ./s21_matrix_test > /var/log/valgrind.log 2>&1 && cat /var/log/valgrind.log"]
+
+# Note: Adjust the ENTRYPOINT command based on your specific needs
